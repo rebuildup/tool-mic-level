@@ -19,7 +19,7 @@ import {
 	statusLabel,
 	summarizeCheck,
 	TARGET_DBFS,
-} from "../lib/audio-math";
+} from "../src/lib/audio-math";
 
 describe("linearToDbfs", () => {
 	test("returns -Infinity for zero and negative values", () => {

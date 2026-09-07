@@ -1,0 +1,33 @@
+{
+  "name": "@rebuildup/tool-mic-level",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "scripts": {
+    "test": "bun test",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^1.28.0",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "peerDependencies": {
+    "next": "^16.3.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.7",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^7.0.2"
+  },
+  "license": "MIT"
+}

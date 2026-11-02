@@ -9,6 +9,9 @@
     ".": "./src/index.tsx"
   },
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "bun test",
     "lint": "biome check .",
     "format": "biome format --write .",
@@ -16,18 +19,16 @@
   },
   "dependencies": {
     "lucide-react": "^1.28.0",
-    "next": "^16.3.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
-  },
-  "peerDependencies": {
-    "next": "^16.3.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.7",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "typescript": "^7.0.2"
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^7.1.12"
   },
   "license": "MIT"
 }

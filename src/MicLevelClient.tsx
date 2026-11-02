@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertTriangle, Mic, Square, TimerReset } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CheckResult from "./components/CheckResult";
 import DevicePicker, { type DeviceOption } from "./components/DevicePicker";
@@ -15,6 +14,7 @@ import {
 	measureFrame,
 	summarizeCheck,
 } from "./lib/audio-math";
+import { microphoneErrorMessage } from "./lib/microphone-error";
 
 const CHECK_DURATION_MS = 5000;
 const PEAK_HOLD_MS = 1500;
@@ -120,7 +120,11 @@ export default function MicLevelClient() {
 			streamRef.current = null;
 		}
 		if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-			void audioContextRef.current.close();
+			// `close()` returns a promise; a rejection here would become an
+			// unhandled promise rejection, so it is caught explicitly.
+			audioContextRef.current.close().catch((closeError: unknown) => {
+				console.warn("[mic-level] AudioContext close failed", closeError);
+			});
 			audioContextRef.current = null;
 		}
 		analyserRef.current = null;
@@ -183,7 +187,14 @@ export default function MicLevelClient() {
 				audioContextRef.current &&
 				audioContextRef.current.state !== "closed"
 			) {
-				await audioContextRef.current.close();
+				// `close()` is awaited outside the try/catch below, so a
+				// rejection here would surface as an unhandled promise
+				// rejection. Closing a context is best-effort cleanup.
+				try {
+					await audioContextRef.current.close();
+				} catch (closeError) {
+					console.warn("[mic-level] AudioContext close failed", closeError);
+				}
 				audioContextRef.current = null;
 			}
 			setErrorMessage(null);
@@ -286,26 +297,16 @@ export default function MicLevelClient() {
 				}
 			} catch (err) {
 				console.error("[mic-level] getUserMedia failed", err);
+				// A microphone request can fail for reasons the page cannot
+				// fix: the user denied the permission, the frame runs in a
+				// sandbox / cross-origin iframe whose Permissions Policy
+				// forbids `microphone`, the page is not a secure context,
+				// or no input device exists. None of these may crash the
+				// surface, so the failure is reported as a short reason
+				// and the rest of the page keeps working.
 				const name = (err as { name?: string })?.name;
-				if (name === "NotAllowedError" || name === "SecurityError") {
-					setPermission("denied");
-					setErrorMessage(
-						"マイクの使用が許可されていません。ブラウザの設定を確認してください。",
-					);
-				} else if (
-					name === "NotFoundError" ||
-					name === "OverconstrainedError"
-				) {
-					setPermission("denied");
-					setErrorMessage(
-						"マイクが見つかりません。入力デバイスを確認してください。",
-					);
-				} else {
-					setPermission("denied");
-					setErrorMessage(
-						"マイクを取得できませんでした。ページを再読み込みしてもう一度お試しください。",
-					);
-				}
+				setPermission("denied");
+				setErrorMessage(microphoneErrorMessage(name));
 				setActive(false);
 			}
 		},
@@ -374,14 +375,16 @@ export default function MicLevelClient() {
 	return (
 		<div className="min-h-dvh w-full bg-white text-black px-4 sm:px-6 lg:px-12 py-8 pb-[env(safe-area-inset-bottom)]">
 			<div className="max-w-3xl mx-auto pb-16 space-y-6">
+				{/*
+					Breadcrumb is plain text, not links: "Home" and "Tools"
+					are host-application routes. Inside an embedded iframe a
+					navigation to them would replace the host page (or be
+					blocked), so the standalone build does not link out.
+				*/}
 				<nav className="text-sm text-neutral-600">
-					<Link href="/" className="text-blue-600 hover:underline">
-						Home
-					</Link>
+					<span>Home</span>
 					<span className="mx-2">/</span>
-					<Link href="/tools" className="text-blue-600 hover:underline">
-						Tools
-					</Link>
+					<span>Tools</span>
 					<span className="mx-2">/</span>
 					<span className="text-black">Mic Level Checker</span>
 				</nav>

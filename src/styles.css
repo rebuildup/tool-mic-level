@@ -1,0 +1,37 @@
+/*
+ * Self-contained styles for the standalone build.
+ *
+ * Every component in this repository is written with Tailwind utility
+ * classes. When the tool was rendered inside the my-web-2025 host those
+ * utilities came from the host stylesheet (src/app/app.css, Tailwind v4
+ * split-imported without preflight); a standalone static build has no
+ * host and therefore shipped no stylesheet at all (measured for
+ * my-web-2026#910: 0 stylesheets / 0 rules, the frame rendered in the
+ * UA default Times with plain bullets). Tailwind is bundled here so the
+ * artifact is self-contained and matches the utility classes the source
+ * declares.
+ *
+ * Split imports, NOT `@import "tailwindcss"`: preflight.css resets
+ * DOM-default styling on form elements (button borders, input fields,
+ * list markers), which is exactly the over-application the 2025 host
+ * avoids on purpose. Without it the browser renders UA-default chrome
+ * naturally, matching what the tool looked like inside the host.
+ *
+ * `@source` is explicit because the stylesheet lives in `src/` while
+ * the entrypoint imports it from `src/main.tsx`; automatic detection
+ * would otherwise only cover the stylesheet's own directory.
+ */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+/* Minimal box-sizing reset (replaces preflight's `*, ::before, ::after`
+ * rule without restoring form-element resets). Without this, padding +
+ * w-full overflows a 390px frame because the browser default is
+ * content-box. */
+*,
+::before,
+::after {
+	box-sizing: border-box;
+}
+
+@source "./";

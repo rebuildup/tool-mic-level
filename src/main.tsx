@@ -1,6 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import MicLevelApp from "./App";
+// The standalone artifact must carry its own stylesheet: the components
+// are written with Tailwind utility classes that the 2025 host used to
+// supply. See src/styles.css for why the import is split (no preflight).
+import "./styles.css";
 
 /**
  * Standalone entry point.
